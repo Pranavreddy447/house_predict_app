@@ -117,14 +117,20 @@ To serve your application securely over HTTPS, you need a domain name and an SSL
 ### 1. Prerequisites
 - A valid domain name (e.g., `example.com`) pointing to your EC2 instance's Public IP.
 
-### 2. Install Nginx and Certbot on EC2
+### 2. Secure Docker Ports (Important)
+Since we will use Nginx as a reverse proxy, we should prevent direct access to the containers from the outside world.
+Modify `docker-compose.yml`:
+1. Change `ports: - "80:80"` to `ports: - "127.0.0.1:8080:80"` for the **frontend**.
+2. Change `ports: - "8000:8000"` to `ports: - "127.0.0.1:8000:8000"` for the **backend**.
+
+### 3. Install Nginx and Certbot on EC2
 Run these commands on your EC2 instance:
 ```bash
 sudo apt-get update
 sudo apt-get install -y nginx certbot python3-certbot-nginx
 ```
 
-### 3. Configure Nginx Reverse Proxy
+### 4. Configure Nginx Reverse Proxy
 Create a new Nginx configuration file for your site:
 ```bash
 sudo nano /etc/nginx/sites-available/house-predict
@@ -152,14 +158,14 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-### 4. Obtain SSL Certificate
+### 5. Obtain SSL Certificate
 Run Certbot to automatically configure SSL:
 ```bash
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
 Follow the prompts. Certbot will automatically update your Nginx config to redirect HTTP to HTTPS.
 
-### 5. Update Environment Variables
+### 6. Update Environment Variables
 Update your `.env` file to allow the new domain:
 ```bash
 CORS_ALLOWED_ORIGINS=http://localhost,https://yourdomain.com,https://www.yourdomain.com
