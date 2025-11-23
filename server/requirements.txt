@@ -1,0 +1,15 @@
+Django>=5.0.0
+djangorestframework
+django-cors-headers
+mysqlclient
+python-dotenv
+scikit-learn
+pandas
+numpy
+gunicorn
+whitenoise
+django-allauth
+dj-rest-auth
+djangorestframework-simplejwt
+requests
+cryptography
