@@ -176,3 +176,14 @@ docker-compose up -d
 - **Permission Denied**: Ensure you ran `newgrp docker` or logged out/in after adding the user to the docker group.
 - **Connection Refused**: Check your Security Group rules in AWS to ensure ports 80 and 8000 are open.
 - **Container Exits**: Check logs with `docker-compose logs <service_name>` to see why a container failed to start.
+- **"Externally Managed Environment" Error**: If you try to run `pip install` on the host, you will see this error. **You do not need to install app dependencies on the EC2 host**; Docker handles this inside the containers. If you absolutely must run a Python script on the host, create a virtual environment first:
+    ```bash
+    sudo apt install python3-venv
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install <package_name>
+    ```
+- **"mysqlclient" Installation Fails**: This package requires system-level C libraries. If you are installing it on the host (outside Docker), run this first:
+    ```bash
+    sudo apt-get install -y pkg-config python3-dev default-libmysqlclient-dev build-essential
+    ```
