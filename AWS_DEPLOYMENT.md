@@ -29,7 +29,8 @@ This guide outlines the steps to deploy the application to an AWS EC2 instance u
 3.  Edit **Inbound rules** and add the following:
     - **SSH** (Port 22): Source `My IP` (recommended) or `Anywhere`.
     - **HTTP** (Port 80): Source `Anywhere`.
-    - **Custom TCP** (Port 3000): Source `Anywhere` (for React frontend).
+    - **HTTPS** (Port 443): Source `Anywhere`.
+    - **Custom TCP** (Port 3000): Source `Anywhere` (for React frontend) - *Optional, only if running dev server. For production Docker, Port 80 is used.*
     - **Custom TCP** (Port 8000): Source `Anywhere` (for Django backend).
     *Note: In a production environment, you would typically use a reverse proxy (like Nginx) to serve everything on port 80/443.*
 
@@ -41,6 +42,11 @@ Open your terminal and run:
 chmod 400 your-key-pair.pem
 ssh -i "your-key-pair.pem" ubuntu@<your-ec2-public-ip>
 ```
+
+> **Tip:** To find your **Public IPv4 address**:
+> 1. Go to the **AWS Console** > **EC2** > **Instances**.
+> 2. Select your instance.
+> 3. Look for **Public IPv4 address** in the details pane at the bottom.
 
 ## Step 4: Install Docker & Docker Compose
 
@@ -58,6 +64,7 @@ sudo systemctl start docker
 sudo systemctl enable docker
 
 # Add current user to docker group (to run without sudo)
+# $USER is a variable that automatically picks your current username (e.g., 'ubuntu')
 sudo usermod -aG docker $USER
 
 # Install Docker Compose
@@ -81,7 +88,12 @@ newgrp docker
     ```bash
     nano .env
     ```
-    Paste your environment variables (ensure `DEBUG=False` for production).
+    Paste your environment variables. Ensure you set the following for production:
+    ```bash
+    DEBUG=False
+    ALLOWED_HOSTS=backend,localhost,127.0.0.1,<your-ec2-public-ip>
+    CORS_ALLOWED_ORIGINS=http://localhost,http://127.0.0.1,http://<your-ec2-public-ip>
+    ```
 
 3.  **Start the Application**:
     ```bash
@@ -95,11 +107,72 @@ newgrp docker
 ## Step 6: Access the Application
 
 Open your browser and navigate to:
-- Frontend: `http://<your-ec2-public-ip>:3000`
-- Backend API: `http://<your-ec2-public-ip>:8000`
+- Frontend: `http://<your-ec2-public-ip>` (Port 80) or `https://<your-domain>`
+- Backend API: `http://<your-ec2-public-ip>:8000` (Only accessible from localhost if configured strictly)
+
+## Step 7: Configure HTTPS (SSL/TLS)
+
+To serve your application securely over HTTPS, you need a domain name and an SSL certificate. We will use **Nginx** on the host EC2 instance as a reverse proxy and **Certbot** to generate a free Let's Encrypt certificate.
+
+### 1. Prerequisites
+- A valid domain name (e.g., `example.com`) pointing to your EC2 instance's Public IP.
+
+### 2. Install Nginx and Certbot on EC2
+Run these commands on your EC2 instance:
+```bash
+sudo apt-get update
+sudo apt-get install -y nginx certbot python3-certbot-nginx
+```
+
+### 3. Configure Nginx Reverse Proxy
+Create a new Nginx configuration file for your site:
+```bash
+sudo nano /etc/nginx/sites-available/house-predict
+```
+
+Paste the following configuration (replace `yourdomain.com` with your actual domain):
+```nginx
+server {
+    server_name yourdomain.com www.yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080; # Points to the Docker Frontend container
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable the configuration and restart Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/house-predict /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 4. Obtain SSL Certificate
+Run Certbot to automatically configure SSL:
+```bash
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+```
+Follow the prompts. Certbot will automatically update your Nginx config to redirect HTTP to HTTPS.
+
+### 5. Update Environment Variables
+Update your `.env` file to allow the new domain:
+```bash
+CORS_ALLOWED_ORIGINS=http://localhost,https://yourdomain.com,https://www.yourdomain.com
+ALLOWED_HOSTS=backend,localhost,127.0.0.1,yourdomain.com,www.yourdomain.com
+```
+Restart your Docker containers to apply changes:
+```bash
+docker-compose down
+docker-compose up -d
+```
 
 ## Troubleshooting
 
 - **Permission Denied**: Ensure you ran `newgrp docker` or logged out/in after adding the user to the docker group.
-- **Connection Refused**: Check your Security Group rules in AWS to ensure ports 3000 and 8000 are open.
+- **Connection Refused**: Check your Security Group rules in AWS to ensure ports 80 and 8000 are open.
 - **Container Exits**: Check logs with `docker-compose logs <service_name>` to see why a container failed to start.
