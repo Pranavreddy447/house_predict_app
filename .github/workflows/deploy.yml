@@ -14,7 +14,7 @@ jobs:
       run: docker build -t backend-test ./server
     - name: Run Backend Tests
       run: |
-        docker run --rm backend-test sh -c "echo 'SECRET_KEY=test' > .env && echo 'DEBUG=True' >> .env && python manage.py test"
+        docker run --rm backend-test sh -c "echo 'SECRET_KEY=test' > .env && echo 'DEBUG=True' >> .env && echo 'USE_SQLITE=True' >> .env && pytest"
 
   test-frontend:
     runs-on: ubuntu-latest
