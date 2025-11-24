@@ -1,0 +1,9 @@
+self-hosted-runner:
+  labels:
+    - ubuntu-latest
+
+# Allow these secrets to be used in the workflow without warning
+secrets:
+  - EC2_HOST
+  - EC2_USER
+  - EC2_SSH_KEY
