@@ -12,6 +12,8 @@ CMD ["npm", "run", "test"]
 # Stage 3: Build
 FROM base as build
 COPY . .
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 RUN npm run build
 
 # Stage 4: Serve with Nginx
