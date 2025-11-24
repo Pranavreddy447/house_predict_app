@@ -100,6 +100,12 @@ newgrp docker
     docker-compose up -d --build
     ```
 
+4.  **Initialize Database (Important)**:
+    Run the migrations to create the database tables:
+    ```bash
+    docker-compose exec backend python manage.py migrate
+    ```
+
 4.  **Verify Deployment**:
     - Check running containers: `docker ps`
     - View logs: `docker-compose logs -f`
@@ -193,3 +199,9 @@ docker-compose up -d
     ```bash
     sudo apt-get install -y pkg-config python3-dev default-libmysqlclient-dev build-essential
     ```
+- **Running SQL Commands**: To run SQL queries directly, access the database container:
+    ```bash
+    # Log into MySQL shell inside the container
+    docker-compose exec db mysql -u <DB_USER> -p<DB_PASSWORD> <DB_NAME>
+    ```
+    Replace `<DB_USER>`, `<DB_PASSWORD>`, and `<DB_NAME>` with the values from your `.env` file.
