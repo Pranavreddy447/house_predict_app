@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build Frontend Docker Image
-      run: docker build -t frontend-test ./client
+      run: docker build --target test -t frontend-test ./client
     - name: Run Frontend Tests
       run: docker run --rm frontend-test npm test -- --run
 
