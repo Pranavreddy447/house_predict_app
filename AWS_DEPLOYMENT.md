@@ -22,6 +22,32 @@ This guide outlines the steps to deploy the application to an AWS EC2 instance u
 8.  **Storage**: Default (8GB) is usually fine, but 20GB is safer.
 9.  Click **Launch Instance**.
 
+## Step 1.5: Add Swap Space (Crucial for t2.micro/t3.micro)
+
+Since `t2.micro` and `t3.micro` only have 1GB of RAM, running Docker, MySQL, and Django can easily cause the server to crash (freeze). Adding "Swap Space" allows the system to use the hard drive as extra memory.
+
+**Run these commands one by one on your EC2 instance:**
+
+```bash
+# 1. Create a 2GB swap file
+sudo fallocate -l 2G /swapfile
+
+# 2. Set the correct permissions
+sudo chmod 600 /swapfile
+
+# 3. Mark the file as swap space
+sudo mkswap /swapfile
+
+# 4. Enable the swap file
+sudo swapon /swapfile
+
+# 5. Make it permanent (so it stays after reboot)
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# 6. Verify it works (you should see values in the 'Swap' row)
+sudo free -h
+```
+
 ## Step 2: Configure Security Group
 
 1.  Go to your instance details and click on the **Security** tab.
