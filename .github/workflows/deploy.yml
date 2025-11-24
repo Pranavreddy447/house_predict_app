@@ -10,38 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - name: Install Dependencies
+    - name: Build Backend Docker Image
+      run: docker build -t backend-test ./server
+    - name: Run Backend Tests
       run: |
-        cd server
-        pip install -r requirements.txt
-    - name: Run Tests
-      run: |
-        cd server
-        # Create a dummy .env for testing
-        echo "SECRET_KEY=test" > .env
-        echo "DEBUG=True" >> .env
-        python manage.py test
+        docker run --rm backend-test sh -c "echo 'SECRET_KEY=test' > .env && echo 'DEBUG=True' >> .env && python manage.py test"
 
   test-frontend:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    - name: Install Dependencies
-      run: |
-        cd client
-        npm install
-    - name: Run Tests
-      run: |
-        cd client
-        npm test -- --run # Run once, don't watch
+    - name: Build Frontend Docker Image
+      run: docker build -t frontend-test ./client
+    - name: Run Frontend Tests
+      run: docker run --rm frontend-test npm test -- --run
 
   deploy:
     needs: [test-backend, test-frontend]

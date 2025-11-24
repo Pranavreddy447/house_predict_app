@@ -156,3 +156,39 @@ Assuming your `docker-compose.yml` defines services like `server` (Django) and `
     ```bash
     docker-compose exec server python manage.py createsuperuser
     ```
+
+---
+
+## Running Tests
+
+You can run tests either locally or inside Docker containers.
+
+### 1. Backend Tests (Django)
+
+**Option A: Inside Docker (Recommended)**
+This runs tests in the exact environment used for production.
+```bash
+docker-compose exec backend python manage.py test
+```
+
+**Option B: Locally**
+Requires a virtual environment with dependencies installed.
+```bash
+cd server
+source ../venv/bin/activate  # Activate venv
+python manage.py test
+```
+
+### 2. Frontend Tests (React)
+
+**Option A: Inside Docker**
+```bash
+docker-compose exec frontend npm test -- --run
+```
+
+**Option B: Locally**
+```bash
+cd client
+npm test -- --run
+```
+

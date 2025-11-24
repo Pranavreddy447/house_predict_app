@@ -13,3 +13,5 @@ dj-rest-auth
 djangorestframework-simplejwt
 requests
 cryptography
+pytest
+pytest-django
