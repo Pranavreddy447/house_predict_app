@@ -34,11 +34,22 @@ services:
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
 
   frontend:
-    build: ./client
+    build:
+      context: ./client
+      target: nginx # Explicitly target the final stage
     ports:
       - "80:80"
     depends_on:
       - backend
+
+  frontend-test:
+    build:
+      context: ./client
+      target: test
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm run test
 
 volumes:
   db_data:
