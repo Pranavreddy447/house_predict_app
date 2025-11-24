@@ -44,7 +44,7 @@ const Login: React.FC = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="flex flex-col gap-2 rounded-md shadow-sm -space-y-px">
             <div>
               <input
                 type="text"
