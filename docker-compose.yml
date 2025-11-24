@@ -42,14 +42,5 @@ services:
     depends_on:
       - backend
 
-  frontend-test:
-    build:
-      context: ./client
-      target: test
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-    command: npm run test
-
 volumes:
   db_data:
