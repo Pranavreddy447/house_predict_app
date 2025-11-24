@@ -2,7 +2,7 @@
 FROM node:22-alpine as base
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Stage 2: Test
 FROM base as test
